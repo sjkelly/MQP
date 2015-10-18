@@ -30,7 +30,7 @@ Efficient Representations of Geometry}
 \maketitle
 
 \begin{abstract}
-Geometry is fundamental to developing natural problem statements.
+Geometry is fundamental to the development of natural problem statements.
 Opportunities exist in computational geometry to
 add rigourous type descriptions and algorithmic relations that do not
 sacrifice performance. This proposal will develop a foundational context
@@ -52,7 +52,6 @@ computers and explore new procedures. As such, we will review the existing
 systems, their applications, and areas for improvement. Later we will discuss
 some of the areas for improvement in more detail, and establish a proposed
 scope for the project going forward.
-
 
 \section{The Julia Programming Language}
 
@@ -79,7 +78,7 @@ two of native C and FORTRAN code.\footnote{\url{http://julialang.org/benchmarks}
 This is enticing for a solid modeling application and for numerical analysis,
 as the code abstraction can grow organically without performance penalty.
 In fact, the authors of Julia call this balance a solution to the 
-`two language problem". The problem is encountered when abstraction in a
+``two language problem". The problem is encountered when abstraction in a
 high-level language will disproportionately affect performance unless
 implemented in a low-level language. In the next sections we will compare
 the expressability and performance to other languages.
@@ -90,19 +89,22 @@ Julia is a descendent of the Lisp family of programming languages.
 
 
 \begin{figure}[h!]
+  \centering
+    \includegraphics[width=1.0\textwidth]{img/juliabench.pdf}
+  \caption{A comparison of programming languages and performance.}
   \label{fig:juliabench}
-  \centering
-    \includegraphics[width=0.75\textwidth]{img/juliabench.pdf}
-  \caption{A picture of a gull.}
 \end{figure}
 
 \begin{figure}[h!]
   \centering
-    \includegraphics[width=0.75\textwidth]{img/expressability.pdf}
-  \caption{A picture of a gull.}
+    \includegraphics[width=1.0\textwidth]{img/expressability.pdf}
+  \caption{The results in Figure \ref{fig:juliabench} normalized for code length.}
+  \label{fig:juliaexpr}
 \end{figure}
 
+
 \begin{figure}[h!]
+  \label{tab:types}
   \centering
     \caption{A comparison of functions, typing, and dispatch.}
     \begin{tabular}{ l | l l l}
@@ -329,21 +331,29 @@ computational tools for solid modeling have vastly different paradigms. In
 the next few sections we will layout the mathematical and computational
 primciples of these paradigms.
 
-\subsection{Functional Representation}
+\subsection{Implicit Functional Representation}
 
 Functional representation in computation centers around a signed, real-value
 function where the boundary is defined as $f(...) = 0$.
 In $\mathbb{R}3$ this looks like $f(x,y,z) = 0$. For modelling purposes we must add the
 additional constraint that the function evaluates to a negative inside the
 boundary. Further more the magnitude of the return value must correspond to
-the minimum distance between the point and the boundary.
+the minimum distance between the point and the boundary. \cite{Olah_2011}
 
 
 \subsubsection{Distance Fields}
 
+\cite{OpenVDB}
+
+\paragraph{Mesh Construction}
+\cite{Tzur}
+
+\paragraph{Visualization}
+\cite{Tupper_2001}
 
 \subsection{Mesh}
 
+\cite{Bischoff_Botsch_Steinberg_Bischoff_Kobbelt_Aachen_2002}
 
 \subsection{Boundary Rep}
 Boundary Representation (B-Rep) has been the dominant modelling paradigm
@@ -387,7 +397,19 @@ in conjunction with version control systems such as Git.
   \caption{An illustration of a CSG tree.}
 \end{figure}
 
-\section{Simulation Methods}
+
+\subsection{Graphs}
+
+Laplacian Contractions!!!
+
+
+\paragraph{Functional Reactive Programming}
+
+\section{Representation for Simulation Methods}
+
+
+\subsubsection{Linear Algebraic Representation}
+\cite{DiCarlo_Paoluzzi_Shapiro_2014}
 
 \section{Exploration}
 
@@ -396,25 +418,44 @@ in conjunction with version control systems such as Git.
 GeometryTypes.jl is a package for Julia that provides geometric strutures and
 relations. It was started early 2015 as the integration of Meshes.jl,
 ImmutableArrays.jl, HyperRectangles.jl, and FixedSizeArrays.jl. This package
-was able to resolve the relations between geometric structures. With the
+was able to resolve the relations between so geometric structures for
+computational agorithms and fast visualization the GPU. With the
 release of Julia version 0.4 is became possible to build the appropriate
 abstractions. For example ImmutableArrays represented a 3 dimensional
 vector with the concrete type `Vector3{Int64}`. FixedSizeArrays introduced
 the dimensionality as a parameter as `Vector{3,Int64}`. This means the notion
 of a fixed length vector can be abstracted over arbitrary dimensionality.
 
+\subsubsection{Numerical Robustness}
+
+
+\cite{Gappa}
+
 \subsubsection{Simplices}
 
 Recently a `Simplex` type was added to `GeometryTypes`. A `Simplex` is defined
 as the minimum convex set containing the specified points. The initial
 prototype
-
+%https://en.wikipedia.org/wiki/Simplicial_complex
 
 \subsubsection{Distance Fields}
 
+Lagrangian and Eulerian specification of the flow field
 
+
+
+\subsection{Automatic Differentiation}
 
 \subsubsection{Dual Numbers}
+\begin{lstlisting}
+julia> using DualNumbers
+
+julia> f(x) = 2x+1
+f (generic function with 1 method)
+
+julia> f(Dual(1,1))
+3 + 2du
+\end{lstlisting}
 
 
 \subsubsection{Rvachev Functions}
@@ -471,7 +512,9 @@ problems using the R-Function Method. \cite{voron2010} This is the topic
 of this project I stand to gain the most insight.
 
 
-\subsection{Mesh Slicing}
+\subsection{Geometry in Path Planning}
+
+\subsubsection{Mesh Slicing}
 
 
 \section{Conclusion}
