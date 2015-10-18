@@ -43,9 +43,10 @@ Geometry is one of the earliest academic studies in mathematics. Research is
 constantly leading to new patterns and constructions. Many of these find
 highly practical applications in engineering. In this paper we will seek to
 study geometry by developing patterns that are sensible to computers and people.
-To obtain sensiblile patterns we address two different audiences.
-One is the computer which requires execution effiency. The other is people,
-who require lucid representation of code.
+To obtain sensible patterns we address two different audiences.
+One is the computer which requires execution efficiency. The other is people,
+who require lucid representation of code. Such challenges are well known in
+the Human-Computer Interaction (HCI) field\cite{Tognazzini_1993}.
 
 This proposal will try to refine existing implementations of geometry for
 computers and explore new procedures. As such, we will review the existing
@@ -69,6 +70,7 @@ developers from MIT. The language targets technical computing by providing a
 dynamic type system with near-native code performance. This is accomplished by
 using three concepts: a Just-In-Time (JIT) compiler to target the LLVM framework,
 a multiple dispatch system, and code specialization.\cite{bezanson2012julia}
+\cite{Bezanson_Edelman_Karpinski_Shah_2014}
 The syntactical style is similar to MATLAB and Python.
 The language implementation and many libraries are available under the
 permissive MIT license.\footnote{\url{http://opensource.org/licenses/MIT}}
@@ -81,12 +83,19 @@ In fact, the authors of Julia call this balance a solution to the
 ``two language problem". The problem is encountered when abstraction in a
 high-level language will disproportionately affect performance unless
 implemented in a low-level language. In the next sections we will compare
-the expressability and performance to other languages.
+the expressibility and performance to other languages.
 
 \subsection{Comparisons}
 
-Julia is a descendent of the Lisp family of programming languages.
-
+Many languages are as fast as Julia but sacrifice expressibility.
+In Figure \ref{fig:juliabench} we can see some comparisons to other programming
+languages. This was developed by the Julia core team, and illustrates that
+Julia is highly competitive in performance. Again, these results stem from
+the compiler and language design. In Figure \ref{fig:juliaexpr} we can see
+these results normalized against code length. The Julia code is quite short,
+yet consistently achieves good performance.
+Much of this comes down to the innovated type and function system. We will
+discuss these more in depth later.
 
 \begin{figure}[h!]
   \centering
@@ -98,13 +107,36 @@ Julia is a descendent of the Lisp family of programming languages.
 \begin{figure}[h!]
   \centering
     \includegraphics[width=1.0\textwidth]{img/expressability.pdf}
-  \caption{The results in Figure \ref{fig:juliabench} normalized for code length.}
+  \caption{The results in Figure \ref{fig:juliabench} normalized for code length. (Courtesy of Simon Danish)}
   \label{fig:juliaexpr}
 \end{figure}
 
 
+In 1972 Alan Kay introduced the terms
+"class" and "object", to describe a coupling of data and functionality.\footnote{\url{http://gagne.homedns.org/~tgagne/contrib/EarlyHistoryST.html}}
+An object is simply and implementation of a class. Computer Scientists
+call this "Object Oriented Programming" (OOP).
+Languages such as C++, Java, and Python all subscribe to this paradigm.
+In Python this looks like the following:
+\begin{lstlisting}
+class Foo:
+    foo1
+    foo2
+    def add_to_foo1(self, x):
+        self.foo1 += x
+\end{lstlisting}
+
+This system positively enables specialization of functionality, but due
+to the coupling of data with functions it becomes a challenge to extend
+functionality. Languages for scientific computing generally avoid the
+"traditional" notions
+of OOP. In Table \ref{tab:types} we can see a
+comparison of type systems used in scientific computing languages. In the next
+few sections the implications of multiple dispatch and the relation to OOP
+will be developed further.
+
+
 \begin{figure}[h!]
-  \label{tab:types}
   \centering
     \caption{A comparison of functions, typing, and dispatch.}
     \begin{tabular}{ l | l l l}
@@ -115,6 +147,7 @@ Julia is a descendent of the Lisp family of programming languages.
     Dylan & dynamic & default & partial (no dispatch) \\
     Fortress & static & default & yes \\
     \end{tabular}
+  \label{tab:types}
 \end{figure}
 
 
@@ -306,9 +339,47 @@ shuffling between cache and RAM.
 
 \subsubsection{Parameters}
 
+Type parameters are w
+
+\subsubsection{Macros and Generated Functions}
+Julia is a descendant of the Lisp family of programming languages. Lisp
+is a portmanteau for "List Processing". The language was designed to address
+the new notion of "types", specifically in application to Artificial
+Intelligence (AI) problems.\cite{McCarthy_1966} The notion of an "S-Expression"
+was introduced in McCarthy's seminal work. These statements use parenthesis
+to denote functions and arguments. Below is an an example of S-Expressions
+for addition and multiplication.
+
+\begin{lstlisting}
+> (+ 1 1)
+2
+
+> (* 3 4)
+12
+\end{lstlisting}
+
+This syntax is noted for it's mathematical purity.
+However it can be a syntactic difficulty for many.
+Most of the current popular programming languages
+use variants of ALGOL syntax, which is noted for being more readable.
+\cite{Hoare}
+Julia also uses ALGOL syntax, but is lowered to S-Expressions. This enables
+many of the mathematically pure relations we seek to achieve.
+In addition S-Expressions are highly conducive to source transforms.
+This develops a notion of "Homoiconicity", where the representation of
+program structure is similar to the syntax. In Julia we use this property
+to make "macros" which enable source code to be transformed based on
+structure or type information before compilation.
+
+\todo{More on generated functions}
+
 
 \subsection{Example}
 
+
+\subsection{On the changing state of Computation}
+
+\cite{Shamos_1999}
 
 \section{Solid Modeling Paradigms}
 
@@ -341,17 +412,26 @@ boundary. Further more the magnitude of the return value must correspond to
 the minimum distance between the point and the boundary. \cite{Olah_2011}
 
 
-\subsubsection{Distance Fields}
+\cite{Shugrina_Shamir_Matusik_2015}
 
+Such representation is natural for then descriping transformations:
+\cite{Henderson_2002}
+
+\subsection{Distance Fields}
+Pixar:
 \cite{OpenVDB}
+Mesh to signed distance field.
+\cite{Baerentzen_Aanaes}
+
 
 \paragraph{Mesh Construction}
 \cite{Tzur}
 
-\paragraph{Visualization}
-\cite{Tupper_2001}
+
 
 \subsection{Mesh}
+
+\cite{Heckbert_Garland_1997}
 
 \cite{Bischoff_Botsch_Steinberg_Bischoff_Kobbelt_Aachen_2002}
 
@@ -401,7 +481,7 @@ in conjunction with version control systems such as Git.
 \subsection{Graphs}
 
 Laplacian Contractions!!!
-
+\cite{Cao_Tagliasacchi_Olson_Zhang_Su_2010}
 
 \paragraph{Functional Reactive Programming}
 
@@ -410,6 +490,10 @@ Laplacian Contractions!!!
 
 \subsubsection{Linear Algebraic Representation}
 \cite{DiCarlo_Paoluzzi_Shapiro_2014}
+
+\subsection{Visualization}
+\cite{Tupper_2001}
+\cite{Hijazi_Knoll_Schott_Kensler_Hansen_Hagen_2008}
 
 \section{Exploration}
 
@@ -426,10 +510,15 @@ vector with the concrete type `Vector3{Int64}`. FixedSizeArrays introduced
 the dimensionality as a parameter as `Vector{3,Int64}`. This means the notion
 of a fixed length vector can be abstracted over arbitrary dimensionality.
 
+\cite{Pasko_Adzhiev_Comninos_2008}
+
 \subsubsection{Numerical Robustness}
 
 
-\cite{Gappa}
+Tools have been developed: \cite{Gappa}
+
+\cite{Shewchuk}
+\cite{Kettner_Mehlhorn_Pion_Schirra_Yap_2008}
 
 \subsubsection{Simplices}
 
@@ -441,8 +530,6 @@ prototype
 \subsubsection{Distance Fields}
 
 Lagrangian and Eulerian specification of the flow field
-
-
 
 \subsection{Automatic Differentiation}
 
