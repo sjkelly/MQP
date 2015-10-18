@@ -29,6 +29,13 @@ Efficient Representations of Geometry}
 \begin{document}
 \maketitle
 
+\begin{abstract}
+Geometry is fundamental to developing natural problem statements.
+Opportunities exist in computational geometry to
+add rigourous type descriptions and algorithmic relations that do not
+sacrifice performance. This proposal will develop a foundational context
+for such a research project.
+\end{abstract}
 
 \section{Introduction}
 
@@ -64,7 +71,8 @@ dynamic type system with near-native code performance. This is accomplished by
 using three concepts: a Just-In-Time (JIT) compiler to target the LLVM framework,
 a multiple dispatch system, and code specialization.\cite{bezanson2012julia}
 The syntactical style is similar to MATLAB and Python.
-The language implementation and many libraries are available under the permissive MIT license.\footnote{\url{http://opensource.org/licenses/MIT}}
+The language implementation and many libraries are available under the
+permissive MIT license.\footnote{\url{http://opensource.org/licenses/MIT}}
 
 Benchmarks have shown the language can consistently perform within a factor of
 two of native C and FORTRAN code.\footnote{\url{http://julialang.org/benchmarks}}
@@ -108,11 +116,10 @@ Julia is a descendent of the Lisp family of programming languages.
 \end{figure}
 
 
-\subsection{Functions and Data}
-Julia is a descendent of the Lisp family of programming languages. Similar
-to Lisp, it is an experiment in language design. Much of this advancement
+\subsection{Functions}
+Julia is an experiment in language design. Much of the advancement
 revolves around the representation of data and the execution of functions.
-The language optionally typed, which means function specialization on types
+The language is optionally typed, which means function specialization on types
 is inferred. See below:
 \begin{lstlisting}
 julia> increment(x) = x + 1
@@ -153,7 +160,11 @@ julia> function increment(x::ASCIIString)
        end
 increment (generic function with 2 methods)
 \end{lstlisting}
-Since \texttt{ASCIIString} is a series of 8 bit characters, we can iterate over the
+The line \texttt{x::ASCIIString} is called a ``type annotation" and
+states that \texttt{x} must be a subtype
+of \texttt{ASCIIString}. This allows one to control dispatch of functions,
+since Julia will default to the \emph{most specific implementation}.
+Since\texttt{ASCIIString} is a series of 8 bit characters, we can iterate over the
 string and increment each character individually. The \texttt{[]} indicates we are
 constructing an array of characters to pass to be passed to the \texttt{ASCIIString}
 type constructor. Now we see our example works:
@@ -169,7 +180,8 @@ This means the author only has to write a few sufficently abstract
 implementations of functions. If special cases occur multiple functions
 with different arity or type signatures can be implmented. Explicitly
 this is called multiple dispatch. In practice by the user this looks like
-abstracted code. To the computer, this means choosing the most specific, and
+abstracted or generic code.
+To the computer, this means choosing the most specific, and
 thus performant method. Let's go back to the integer and floating point
 example. Below is the LLVM assembly generated for each method:
 \begin{lstlisting}
@@ -203,8 +215,9 @@ specialize over many types.
 Revealing the role in which this paradigm allows Julia to achieve high
 performance is a matter to be developed in further sections.
 
-\subsection{Types, Immutables, and Parameters}
+\subsection{Types}
 
+\subsubsection{Mutability and data packing}
 Types and immutables are containers of data. The primary difference between
 the two is the notion of "mutability". Types are mutabile, immutables are 
 immutable. What does this mean? Let's break something first:
@@ -242,7 +255,8 @@ ERROR: type FooIsImmutable is immutable
 What just happened demonstrates the contract defined by mutability. Mutable
 objects, which is an instance of a type (i.e. \texttt{f}), can have their fields
 (i.e. \texttt{a}) changed. Immutables cannot. The immutable contract helps develop
-a notion of functional purity. Practically this can be of great benefit to
+a notion of functional purity. To the user this means immutables are defined
+by their values. Practically this can be of great benefit to
 the compiler. For example:
 \begin{lstlisting}
 julia> a = (1,2,3)
@@ -278,9 +292,20 @@ julia> isbits(Int64)
 true
 \end{lstlisting}
 Why is this the case? We see that \texttt{Int64} is bits, because it is literally
-64 bits. \texttt{Array\{Int,64\}} is a data type that can vary in size. This means
+64 bits. In Julia a \texttt{bitstype} behaves similar to an immutable, and is identified
+by value. \texttt{Array\{Int,64\}} is a mutable data type that can vary in size.
+This means
 the \texttt{Tuple} needs to store the arrays as references, in this case a
-pointer.
+pointer. When iterating over a data set, such a ``pointer dereferences" (this is
+jargon for accessing the data in memory pointed to by a pointer), can be costly.
+Modern CPUs accell when data is linearly packed and pointer-free. The
+data can be brought into the CPU's memory cache once and computed without
+shuffling between cache and RAM.
+
+\subsubsection{Parameters}
+
+
+\subsection{Example}
 
 
 \section{Solid Modeling Paradigms}
@@ -290,7 +315,16 @@ natural problem statement. For example, in diffusion we model the transfer of
 energy throughout a domain. An engineer might define such a domain with a
 model, say of an injection molding nozzle. Such a domain is difficult to
 describe in terms of a functional boundary, so the engineer might prefer
-a boundary representation. The development of modern
+a boundary representation.
+
+In addition to being fundamental to natural studies, solid modelling is growing
+in popularity due to low-cost digital manufactuing tools reaching the market.
+Most popularly there have been 3D printers popping up in nearly every educational
+insitiution over the past 3 years. In addition CNC routing, and laser cutting
+enable people to go quickly from design to fabrication.
+
+
+The development of modern
 computational tools for solid modeling have vastly different paradigms. In
 the next few sections we will layout the mathematical and computational
 primciples of these paradigms.
@@ -303,6 +337,9 @@ In $\mathbb{R}3$ this looks like $f(x,y,z) = 0$. For modelling purposes we must 
 additional constraint that the function evaluates to a negative inside the
 boundary. Further more the magnitude of the return value must correspond to
 the minimum distance between the point and the boundary.
+
+
+\subsubsection{Distance Fields}
 
 
 \subsection{Mesh}
@@ -326,17 +363,28 @@ This middle step of Computer Aided Engineering (CAE) is known as pre-processing.
 For example in the Finite Element Analysis (FEA) process the requires
 establishing proper aspect ratio, area, and connectivity of nodes. Research has shown that functional representations can simplify or eliminate these steps and algorithms.
 
-In addition, designers targeting parametric design have turned to the methods of Constructive Solid Geometry (CSG), which works using manipulation of geometric primitives (half-spaces) as a level of abstraction. This enables parametric solids to be represented using operations and relations on primitive solids. CSG has been growing in popularity due to programs such as OpenSCAD\footnote{\url{http://www.openscad.org}}, CoffeeSCAD\footnote{\url{http://coffeescad.net/}}, POVRay\footnote{\url{http://www.povray.org/}} and Thingiverse Customizer\footnote{\url{http://www.thingiverse.com}}. These programs are particularly popular for collaboration in conjunction with version control systems such as Git.
+
 
 
 
 \subsection{CSG}
 
+In addition, designers targeting parametric design have turned to the methods
+of Constructive Solid Geometry (CSG), which works using manipulation of
+geometric primitives (half-spaces) as a level of abstraction.
+This enables parametric solids to be represented using operations and
+relations on primitive solids. CSG has been growing in popularity due
+to programs such as OpenSCAD\footnote{\url{http://www.openscad.org}},
+CoffeeSCAD\footnote{\url{http://coffeescad.net/}},
+POVRay\footnote{\url{http://www.povray.org/}}
+and Thingiverse Customizer\footnote{\url{http://www.thingiverse.com}}.
+These programs are particularly popular for collaboration
+in conjunction with version control systems such as Git.
 
 \begin{figure}[h!]
   \centering
     \includegraphics[width=0.75\textwidth]{img/csg_tree.png}
-  \caption{A picture of a gull.}
+  \caption{An illustration of a CSG tree.}
 \end{figure}
 
 \section{Simulation Methods}
@@ -427,7 +475,6 @@ of this project I stand to gain the most insight.
 
 
 \section{Conclusion}
-
 
 
 \bibliography{references}
