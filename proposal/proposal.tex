@@ -344,7 +344,7 @@ shuffling between cache and RAM.
 
 \subsubsection{Parameters}
 
-Type parameters are w
+\todo{need to demonstrate why this is HUGELY important for performance and expression}
 
 \subsubsection{Macros and Generated Functions}
 Julia is a descendant of the Lisp family of programming languages. Lisp
@@ -374,9 +374,13 @@ In addition S-Expressions are highly conducive to source transforms.
 This develops a notion of "Homoiconicity", where the representation of
 program structure is similar to the syntax. In Julia we use this property
 to make "macros" which enable source code to be transformed based on
-structure or type information before compilation.
+structure before compilation.
 
-\todo{More on generated functions}
+Generated functions perform a similar function as macros, but at the function
+level. They enable source code to be procedurally generated based on types.
+Surveys of Computer Science literature show that such a concept is new.
+\todo{More on generated functions. Not sure if they should even be mentioned
+since they are usually unnecessary}
 
 \todo{Become more articulate like Graydon Hoare: \url{http://graydon2.dreamwidth.org/189377.html}}
 
@@ -560,8 +564,7 @@ underlying method of operation.
 
 \subsection{Graphs}
 
-Geometry as a graph representation is probably the most exciting and
-underdeveloped field of study in this computational geometry. 
+Constraints. Underlying mechanism of Brep.
 
 Laplacian Contractions!!!
 \cite{Cao_Tagliasacchi_Olson_Zhang_Su_2010}
@@ -639,9 +642,9 @@ construct for the other types yet.
 
 In addition I would like to add a Simplical Complex type.\footnote{\url{https://en.wikipedia.org/wiki/Simplicial_complex}}
 
-\subsubsection{Distance Fields}
+\subsubsection{Mesh Slicing}
 
-Lagrangian and Eulerian specification of the flow field
+Topology. Paper by Emmanuel would be a good start.
 
 \subsection{Automatic Differentiation}
 
@@ -710,13 +713,9 @@ Unfortunately, no monographs about R-Functions exist in the English literature.
 Most literature is in Russian, however many articles presenting applied
 problems using the R-Function Method. \cite{voron2010}
 
-Such a system for analytic geometry can be developed further.
-
-
-\subsection{Geometry in Path Planning}
-
-\subsubsection{Mesh Slicing}
-
+Such a system for analytic geometry can be developed further. In the context
+of an Eulerian flow field, a distance field over a function that
+generates partial derivatives could be a fast numerical computation method.
 
 \section{Conclusion}
 
