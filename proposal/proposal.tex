@@ -101,7 +101,7 @@ Julia is highly competitive in performance. Again, these results stem from
 the compiler and language design. In Figure \ref{fig:juliaexpr} we can see
 these results normalized against code length. The Julia code is quite short,
 yet consistently achieves good performance.
-Much of this comes down to the innovated type and function system. We will
+Much of this comes down to the innovated type and function system.\cite{Chen2014} We will
 discuss these more in depth later.
 
 \begin{figure}[h!]
@@ -398,7 +398,8 @@ natural problem statement. For example, in diffusion we model the transfer of
 energy throughout a domain. An engineer might define such a domain with a
 model, say of an injection molding nozzle. Such a domain is difficult to
 describe in terms of a functional boundary, so the engineer might prefer
-a boundary representation.
+a boundary representation. Such boundary representations can be converted
+to something more natural for numerical methods with software.
 
 In addition to being fundamental to natural studies, solid modeling is growing
 in popularity due to low-cost digital manufacturing tools reaching the market.
@@ -434,17 +435,31 @@ geometric features to ensure a part can be manufactured.\cite{Shugrina_Shamir_Ma
 They call their system ``FabForms" and shows how functional representations
 can easily accept constraints.
 
+One can also compose functional representations with set operations. 
+Below are basic set operations defined for these functions:
+
+\begin{equation*}
+\cap : \mathtt{min}(f_1,f_2) \\
+\end{equation*}
+\begin{equation*}
+\cup : \mathtt{max}(f_1,f_2) \\
+\end{equation*}
+\begin{equation*}
+\neg : -\mathtt{f}_1
+\end{equation*}
+
+It follows that the ``difference"
+of $f_1$ and $f_2$ is the intersection of $f_1$ with the negation of $f_2$,
+$\mathtt{max}(f_1,-f_2)$.
+The mathematical analyst might have trouble with these formulations because
+such operations
+create discontinuities. This is one area of exploration that will be discussed
+later.
+
 More importantly, functional representations can naturally deal with affine
 transforms. \cite{Henderson_2002} Given some transform associated with a
 FRep, one simply applies the inverse transform to check membership.
 
-One can also compose functional representations with set operations. The union
-of two functions, $f_1$ and $f_2$ can be expressed by $min(f_1,f_2)$. An
-intersection is expressed as $max(f_1,f_2)$, and it follows that the difference
-of $f_1$ and $f_2$ is the intersection of the negation of $f_2$, $max(f_1,-f_2)$.
-The mathematical analyst might have trouble with this because such operations
-create discontinuities. This is one area of exploration that will be discussed
-later.
 
 \subsection{Signed Distance Fields}
 
@@ -555,9 +570,11 @@ geometries with CSG.
 \begin{figure}[h!]
   \centering
     \includegraphics[width=0.75\textwidth]{img/csg_tree.png}
-  \caption{An illustration of a CSG tree.}
+  \caption{An illustration of a CSG tree.\protect\footnotemark}
   \label{fig:csgtree}
 \end{figure}
+
+\footnotetext{By Zottie (Own work) GFDL or CC BY-SA 4.0-3.0-2.5-2.0-1.0, via Wikimedia Commons}
 
 Most of these systems use mesh or functional representations as the
 underlying method of operation.
@@ -573,8 +590,38 @@ Laplacian Contractions!!!
 \cite{DiCarlo_Paoluzzi_Shapiro_2014}
 
 \subsection{Visualization}
+
+
+
 \cite{Tupper_2001}
 \cite{Hijazi_Knoll_Schott_Kensler_Hansen_Hagen_2008}
+
+\subsubsection{Polygonal Meshes}
+
+
+
+
+\subsubsection{Ray Tracing and Marching}
+
+When we look at the natural world we observe the
+propogation of light energy. Our eyes recieve this light energy in the form
+of photons. The study of ray tracing seeks to mimic such behavior for
+computer visualizations and simulations. 
+
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=0.75\textwidth]{img/ray_trace_diagram.png}
+  \caption{An illustration of a Ray tracing.\protect\footnotemark}
+  \label{fig:raytrace}
+\end{figure}
+
+\footnotetext{By Henrik (Own work) GFDL or CC BY-SA 4.0-3.0-2.5-2.0-1.0, via Wikimedia Commons}
+
+Íñgo Quílez has done some of the most accessible work on real-time ray tracing.
+His technique is called ray marching, and leverages the properties of functional
+geometry.\cite{Quilez_2008}
+
+\todo{asking Inigo to reproduce images from his presentation}
 
 \section{Exploration}
 
