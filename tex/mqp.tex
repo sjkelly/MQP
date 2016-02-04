@@ -1,0 +1,60 @@
+\documentclass[a4paper]{report}
+
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{amssymb}
+\usepackage[square,sort,comma,numbers]{natbib}
+\usepackage[colorinlistoftodos]{todonotes}
+\bibliographystyle{ieeetr}
+
+\lstdefinestyle{julia}{
+  basicstyle=\scriptsize\ttfamily,
+  breaklines=false,
+  backgroundcolor=\color{gray!10},
+}
+\lstset{style=julia,
+        emph={julia},
+        emphstyle={\color{green}\bfseries}}
+
+
+\title{Computational Methods for Parametrization of Polytopes}
+\author{Steve Kelly}
+
+\begin{document}
+\maketitle
+
+%put table of contents
+\tableofcontents
+\clearpage 
+
+
+\begin{abstract}
+Geometry is fundamental to the development of natural problem statements.
+Opportunities exist in computational geometry to
+add rigourous type descriptions and algorithmic relations that do not
+sacrifice performance.
+\end{abstract}
+
+
+\input{./introduction.tex}
+
+
+\input{./mathematics.tex}
+
+\input{./computation.tex}
+
+\input{./execution.tex}
+
+\input{./conclusion.tex}
+
+
+
+\bibliography{references}
+
+\end{document}
+
