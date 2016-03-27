@@ -5,22 +5,22 @@
 Programming languages are the grammar and syntax a computer presents to a user.
 This project is fundamentally exploratory in nature and seeks to generate
 understanding of geometric relationships using the intersection of
-mathematical and computational rigor. 
+mathematical and computational rigor. We have chosen to use the Julia
+programming language due to comfort of development, and an abundance of
+supporting libraries for mathematical computation. In this chapter
+we will give a brief introduction to many computing concepts and illustrate
+how Julia advances them to meet our needs well.
 
-
-The REPL (Read-Eval-Print-Loop) allows interactive
-evaluation of Julia code. It is highly useful for exploration and testing of
-ideas in the language.
-Blocks starting with "\texttt{julia>}" represent input and the preceding
-line represents output of the evaluated line.
-
-\subsection{History}
+\section{History}
 Julia is a programming language first released in early 2012 by a group of
 developers from MIT. The language targets technical computing by providing a
 dynamic type system with near-native code performance. This is accomplished by
 using three concepts: a Just-In-Time (JIT) compiler to target the LLVM framework,
 a multiple dispatch system, and code specialization.\cite{bezanson2012julia}
 \cite{Bezanson_Edelman_Karpinski_Shah_2014}
+More simply, the language is designed to be dynamic in a way that allows
+rapid prototyping of code and understandable to a reader, yet provides
+a design amicable to performance optimizations and specialization.
 The syntactical style is similar to MATLAB and Python.
 The language implementation and many libraries are available under the
 permissive MIT license.\footnote{\url{http://opensource.org/licenses/MIT}}
@@ -35,7 +35,7 @@ high-level language will disproportionately affect performance unless
 implemented in a low-level language. In the next sections we will compare
 the expressibility and performance to other languages.
 
-\subsection{Comparisons}
+\section{Comparisons}
 
 Many languages are as fast as Julia but sacrifice expressibility.
 In Figure \ref{fig:juliabench} we can see some comparisons to other programming
@@ -63,8 +63,9 @@ discuss these more in depth later.
 
 
 In 1972 Alan Kay introduced the terms
-"class" and "object", to describe a coupling of data and functionality.\footnote{\url{http://gagne.homedns.org/~tgagne/contrib/EarlyHistoryST.html}}
-An object is simply and implementation of a class. Computer Scientists
+"class" and "object" to describe a coupling of data and functionality.\footnote{\url{http://gagne.homedns.org/~tgagne/contrib/EarlyHistoryST.html}}
+An object is an instance of a class, which contains the definitions of 
+functions and member data. Computer Scientists
 call this "Object Oriented Programming" (OOP).
 Languages such as C++, Java, and Python all subscribe to this paradigm.
 In Python this looks like the following:
@@ -81,9 +82,17 @@ to the coupling of data with functions it becomes a challenge to extend
 functionality. Languages for scientific computing generally avoid the
 "traditional" notions
 of OOP. In Table \ref{tab:types} we can see a
-comparison of type systems used in scientific computing languages. In the next
-few sections the implications of multiple dispatch and the relation to OOP
-will be developed further.
+comparison of type systems used in scientific computing languages. Here "Type
+system" can be either dynamic or static, which indicates if the programmer
+needs to specify to the program compiler how data is transformed in a function.
+Generic functions allow a single function name, for example "sum'', to have
+multiple defintions with execution contigent upon the matching of argument
+types. The definition of a parametric type is more nuanced, but generally
+means that the definition of a type may vary based on the types of it's
+member data. 
+In the next
+few sections these ideas will hopefully be clarified and the implications of
+multiple dispatch and the relation to OOP will be developed further.
 
 
 \begin{figure}[h!]
@@ -101,11 +110,13 @@ will be developed further.
 \end{figure}
 
 
-\subsection{Functions}
+\section{Functions}
 Julia is an experiment in language design. Much of the advancement
 revolves around the representation of data and the execution of functions.
 The language is optionally typed, which means function specialization on types
-is inferred. We will use it See below:
+is inferred by the compiler without user intervention. This is an idea
+first utilized in the Hadley Milner's "ML'' which was created to develop theorem
+provers.\cite{Harper_1997}. A basic example of inference in Julia is shown below:
 \begin{lstlisting}
 julia> increment(x) = x + 1
 increment (generic function with 1 method)
@@ -115,8 +126,13 @@ julia> increment(1)
 
 julia> increment(1.0)
 2.0
-\end{lstlisting}
-the \texttt{increment} function was defined for any \texttt{x} value. When the
+\end{lstlisting}\footnote{The REPL (Read-Eval-Print-Loop) allows interactive
+evaluation of Julia code. It is highly useful for exploration and testing of
+ideas in the language.
+Blocks starting with "\texttt{julia>}" represent input and the preceding
+line represents output of the evaluated line.
+}
+The \texttt{increment} function was defined for any \texttt{x} value. When the
 \texttt{1}, an
 integer type was passed as an argument, an integer was returned. Likewise
 when a floating point, \texttt{1.0} was passed, the floating point
@@ -198,9 +214,9 @@ specialize over many types.
 Revealing the role in which this paradigm allows Julia to achieve high
 performance is a matter to be developed in further sections.
 
-\subsection{Types}
+\section{Types}
 
-\subsubsection{Mutability and data packing}
+\subsection{Mutability and Data Packing}
 Types and immutables are containers of data. The primary difference between
 the two is the notion of "mutability". Types are mutabile, immutables are 
 immutable. What does this mean? Let's break something first:
@@ -285,11 +301,11 @@ Modern CPUs accell when data is linearly packed and pointer-free. The
 data can be brought into the CPU's memory cache once and computed without
 shuffling between cache and RAM.
 
-\subsubsection{Parameters}
+\subsection{Parameters}
 
 \todo{need to demonstrate why this is HUGELY important for performance and expression}
 
-\subsubsection{Macros and Generated Functions}
+\section{Macros and Generated Functions}
 Julia is a descendant of the Lisp family of programming languages. Lisp
 is a portmanteau for "List Processing". The language was designed to address
 the new notion of "types", specifically in application to Artificial
@@ -330,4 +346,32 @@ since they are usually unnecessary}
 \subsection{Example}
 
 \cite{Shamos_1999}
+
+
+\section{Numerical Robustness}
+
+Numerical robustness is a perennial problem in computational geometry. Multiple
+approaches exists for various numeric types. Floating points are by far
+the most difficult to deal with. Tools such as Gappa have been developed so
+algorithm writers can check their invariants when using floating points. \cite{Gappa}
+Such tools complicate software development and are not an accessible option
+for the casual researcher.
+
+One of the most common problems formulated is to determine whether or not a
+point is collinear with a line segment. Shewchuk has one of the most pragmatic
+and robust treatments on this topic.\cite{Shewchuk} Kettner, et. al. have also
+developed more examples where numerical robustness is critical. \cite{Kettner_Mehlhorn_Pion_Schirra_Yap_2008}
+
+Julia's GeometricalPredicates package \footnote{\url{https://github.com/JuliaGeometry/GeometricalPredicates.jl}}
+uses the approach outlined by Volker Springel, which requires all floating point
+numbers to be scales between 1 and 2.\cite{Springel_2010} This has the downside
+of significantly reducing the available resolution. \todo{why}
+
+A simpler, although less applicable, approach is to work
+within integer space. Developing a system around this is of interest. For
+example, it should be possible to specify a minimum unit (e.g. microns)
+and perform all computations in integer space assuming this does not exceed
+the needed resolution. More importantly, modern CPUs have integrated 128 bit
+Integer support. 170141183460469231731687303715884105727 is a lot of microns.
+
 
