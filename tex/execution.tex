@@ -1,6 +1,6 @@
 \chapter{Implementation}
 
-\section{Simplex}
+\section{Simplex Implementation}
 
 We began by implementing a Simplex type, defined as follows:
 
@@ -74,18 +74,7 @@ Decompose an N-Simplex into tuple of Simplex{2}
 end
 \end{lstlisting}
 
-
-
-
-To some extent, much of the basic defintions have been implemented
-in libraries such as CGAL, Boost, and ShapeOP. However these libraries
-are written in C and C++, compiled langauges, that are not amicable to dynamic
-exploration. Our system should allow us to quickly prototype tests and
-visualize relationships. This is something that Julia provides extremely well.
-Primarily it accomplishes this through optional type annotations and
-multiple dispatch. Secondarily, it has a rich history of integration with
-interactive computing environments such as a REPL, Jupyter, and Juno.
-
+\section{Issues with Existing Polyhedral Mesh Types}
 
 Prior to this project, GeometryTypes primarily provides for Polygonal Mesh
 type that is well tuned for operations on the CPU and GPU. It is defined
@@ -127,7 +116,7 @@ transforms only need to operate on the vertices. Thus, in the optimistic versus
 pessimistic case these operations can be 3x faster with this layout
 assuming all vertices are in 3 faces.
 
-Maybe a good idea to implement on this type too?
+
 
 \section{Parametric Triangle}
 
@@ -135,6 +124,73 @@ Maybe a good idea to implement on this type too?
 
 
 \section{Signed Distance Field}
+
+\subsection{Signed Distance Fields}
+
+\todo{rewrite to be salient}
+
+A signed distance field (SDF) is a uniform sampling of an implicit function,
+or any oriented geometry. \todo{didn't introduce orientation, winding order, etc...}
+Below
+we can see this in action over the definition of a circle.
+
+\begin{lstlisting}
+julia> f(x,y) = sqrt(x^2+y^2) - 1
+f (generic function with 1 method)
+
+julia> v = Array{Float64,2}(5,5) # construct a 2D 5x5 array of Float64
+
+julia> for x = 0:4, y = 0:4
+           v[x+1,y+1] = f(x,y)
+       end
+
+julia> v
+5x5 Array{Float64,2}:
+ -1.0  0.0       1.0      2.0      3.0    
+  0.0  0.414214  1.23607  2.16228  3.12311
+  1.0  1.23607   1.82843  2.60555  3.47214
+  2.0  2.16228   2.60555  3.24264  4.0    
+  3.0  3.12311   3.47214  4.0      4.65685
+\end{lstlisting}
+
+The results of \texttt{v} might be confusing since the matrix is oriented with
+the origin in the top left corner. At coordinate $(0,0)$, or entry \texttt{v[1,1]},
+we see that \texttt{f} is
+equal to \texttt{-1}. Likewise we can see $(0,1)$ and $(1,0)$ are points on
+the boundary since the value is \texttt{0} and everywhere else is positive.
+
+Distance fields are interesting since they provide an intermediate representation
+between functional space and discrete-geometric space. However they are
+a very memory hungry data structure. Pixar has published OpenVDB which helps
+work around these concerns, but such compression can be lossy.\cite{OpenVDB}
+With the advent of shader pipelines for GPUs, distance fields have become
+more popular. Valve has used SDFs with great success for generating smooth
+text.text renders. \cite{Green_2007}
+Many algorithms for generating polyhedra from an SDF
+exist. The most common are Marching Tetrahedra, Marching Cubes,
+and Dual Contours.\cite{Muller_Wehle_1997}\cite{Newman_Yi_2006}\cite{Cook_Hourvitz}
+
+\todo{Talk about vert and frag shaders.}
+
+Andreas Bærentzen and Henrik Aanæs published methods on the inverse
+problem of converting a mesh to a signed distance fields.\cite{Baerentzen_Aanaes}
+DiFi was introduced in 2004, which demonstrates an algorithm for creating
+SDFs on multiple types of geometry \cite{Sud_Otaduy_Manocha_2004}.
+\todo{Need to re-read this paper}
+
+Many necessary algorithms in path planning for digital manufacturing tools
+fall out of distance fields. For example, offsetting simply becomes
+an addition or subtraction over the SDF. Computing the medial axis becomes
+a scan for inflection points. Many path planners need to simplify polygon
+representations as to not generate move less than the resolution of the machine.
+Assuming the machine uses a Cartesian system, a SDF can correspond perfectly
+to the lowest available resolution of the machine.
+Likewise as Stereolithographic 3D printers
+begin to use digital mirror devices (commonly known as DLP or DMD)
+, discrete representations of geometry will become more important in
+digital manufacturing.
+
+\cite{Pasko_Adzhiev_Comninos_2008}
 
 
 \section{Polytope}
