@@ -1,8 +1,64 @@
 \chapter{Implementation}
 
+In this section we will begin to outline the implementation of
+various forms of parametric polytopes.
+
+\section{Survey of Available Packages}
+
+In chapter 3 we outlined the rationale for using Julia for mathematical
+computer programming. An additional impetus was the familiarity of the
+geometry packages. There will be various references to these and they
+are outlines below.
+
+\subsection{GeometryTypes.jl}
+
+GeometryTypes.jl provides datatypes and basic operations for computational
+geometry. This package began as a unification of types located in
+HyperRectangles.jl, Meshes.jl, and GLAbstraction.jl. With the introduction
+of this package the community made some initial progress on designing
+types that can be used for computation on the CPU and GPU. Much of
+our basic combinatorial analysis operations and data types have be contributed
+to the package.
+
+\subsection{FileIO.jl and MeshIO.jl}
+
+FileIO.jl is a package that unifies various file loaders that existed in
+the Julia package ecosystem under one import. The purpose is to
+allow users to simply call the 'save' and 'load' functions with file
+information inferred from file extensions, magic numbers, or data types.
+MeshIO.jl is one such packge that provides file loaders for
+polygonal mesh data. The file formats supported as of this writing include
+obj, stl, ply, off, and 2dm.
+
+\subsection{Meshing.jl}
+
+Meshing.jl provides algorithims for converting signed distance field
+data into polytopes. The two algorithms currently provided are
+the Marching Cubes and Marching Tetrahedra algorithms.
+
+\subsection{Meshes.jl}
+
+Meshes.jl is currently a meta-package\footnote{Meta-package means
+no code is contained in the package besides imports from others. It is
+often used for stability purposes.} that imports elements on GeometryTypes.jl,
+FileIO.jl, and Meshing.jl. It is one of the older packages in the
+Julia package ecosystem and was an early center of collaboration before
+the scopes began to expand. Older releases before Meshes.jl became a meta-package 
+are maintained for insitutional users. The name space is held to
+allow for a center for experimentation as stability in the base packages
+becomes more neccesary.
+
+\subsection{ParametricPolyhedra.jl}
+
+ParametricPolyhedra.jl is a package used for solving constraints on
+triangular faces of a polyhedra. The intention of this package
+is to allow polyhedra to be specified via angles and edge lengths.
+
+
 \section{Simplex Implementation}
 
-We began by implementing a Simplex type, defined as follows:
+We began by implementing a Simplex type in GeometryTypes.jl,
+defined as follows:
 
 \begin{lstlisting}
 """
@@ -27,7 +83,7 @@ end
 \end{lstlisting}
 
 With the definition in GeometryTypes, we afford ourselves two notions of
-dimensionality. Our first parameter `N` gives us the total dimensionality
+dimensionality. Our first parameter \texttt{N} gives us the total dimensionality
 of the simplex. `T` is the type of the points. For example in Julia we can
 prefix a colon to an identifier and make it a symbol which is reflected
 in the type information:
