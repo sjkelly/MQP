@@ -8,33 +8,66 @@ various forms of parametric polytopes.
 In chapter 3 we outlined the rationale for using Julia for mathematical
 computer programming. An additional impetus was the familiarity of the
 geometry packages. There will be various references to these and they
-are outlines below.
+are outlined below so the reader may become familiar with the utilities
+available.
 
 \subsection{GeometryTypes.jl}
 
 GeometryTypes.jl provides datatypes and basic operations for computational
 geometry. This package began as a unification of types located in
-HyperRectangles.jl, Meshes.jl, and GLAbstraction.jl. With the introduction
+HyperRectangles.jl, Meshes.jl, and GLAbstraction.jl. The initial
+types were polygonal meshes and bounding boxes, but now encompasses
+datatypes for solid modeling, data visualization, and
+geographic information systems.
+With the introduction
 of this package the community made some initial progress on designing
-types that can be used for computation on the CPU and GPU. Much of
+types that can be used for computation on the CPU and GPU, however
+GPU targets are rapidly evolving and the focus has shifted from geometric
+operations to array operations. Much of
 our basic combinatorial analysis operations and data types have be contributed
-to the package.
+to this package.
+
+\url{https://github.com/JuliaGeometry/GeometryTypes.jl}
 
 \subsection{FileIO.jl and MeshIO.jl}
 
 FileIO.jl is a package that unifies various file loaders that existed in
 the Julia package ecosystem under one import. The purpose is to
-allow users to simply call the 'save' and 'load' functions with file
+allow users to simply call the \texttt{save} and \texttt{load}
+functions with file
 information inferred from file extensions, magic numbers, or data types.
 MeshIO.jl is one such packge that provides file loaders for
 polygonal mesh data. The file formats supported as of this writing include
-obj, stl, ply, off, and 2dm.
+obj, stl, ply, off, and 2dm. This package may be useful for importing
+polytope data from other programs such as Blender or AutoCAD, or generating
+large data sets.
+
+It should be noted that Julia has a \texttt{serialize} function, which will
+save a datatype in full fidelity and in compact binary. Since Julia is
+yet to reach a 1.0 release, this function is considered unstable. Once
+\texttt{serialize} is stable, it will be the preferred method of saving
+data sets to the computers storage drive.
+
+\url{https://github.com/JuliaIO/FileIO.jl}
+
+\url{https://github.com/JuliaIO/MeshIO.jl}
 
 \subsection{Meshing.jl}
 
 Meshing.jl provides algorithims for converting signed distance field
 data into polytopes. The two algorithms currently provided are
-the Marching Cubes and Marching Tetrahedra algorithms.
+the Marching Cubes (MC) and Marching Tetrahedra (MT) algorithms. For this project
+we added the Marching Cubes algorithm which is twice as fast as the
+Marching Tetrahedra algorithm. The import difference between the two is
+performance and manifold mesh generation. The MT algorithm generates manifold
+meshes, but generates more faces (costing memory) and is slower.
+It is useful for generating
+meshes from noisy data or applications where manifold meshes are required
+such as finite element analysis and 3D printing. The Marching Cubes algorithm
+is less costly for the computers resources, and is helpful for visualization
+applications where user experience is important.
+
+\url{https://github.com/JuliaGeometry/Meshing.jl}
 
 \subsection{Meshes.jl}
 
@@ -43,19 +76,40 @@ no code is contained in the package besides imports from others. It is
 often used for stability purposes.} that imports elements on GeometryTypes.jl,
 FileIO.jl, and Meshing.jl. It is one of the older packages in the
 Julia package ecosystem and was an early center of collaboration before
-the scopes began to expand. Older releases before Meshes.jl became a meta-package 
+the scopes began to expand. Releases before Meshes.jl became a meta-package 
 are maintained for insitutional users. The name space is held to
 allow for a center for experimentation as stability in the base packages
 becomes more neccesary.
+
+\url{https://github.com/JuliaGeometry/Meshes.jl}
 
 \subsection{ParametricPolyhedra.jl}
 
 ParametricPolyhedra.jl is a package used for solving constraints on
 triangular faces of a polyhedra. The intention of this package
 is to allow polyhedra to be specified via angles and edge lengths.
+It draws heavily from the resources available in GeometryTypes. Since
+it uses algorithms to define the types and is some what domain
+specific at this point, we opted to make it a seperate package.
 
+\url{https://github.com/sjkelly/ParametricPolyhedra.jl}
 
-\section{Simplex Implementation}
+\subsection{GeometricalPredicates.jl}
+
+GeometricalPredicates.jl is a package that provides numerically
+robust primitives and algorithms for computing incircle, circumcircle, and
+intriangle calculations. The approach to numerical robustness is used by
+the Illustric Simulation, and outlines in Volker Springel's paper
+"Galiliean-invariant cosmological hydrodynamical simulations on a moving mesh"\cite{Springel_2010}.
+The essence of the approach is to restrict values in 64 bit floating points
+between 1 and 2 since the exponent component is constant. This allows
+128 bit integers to be used for overflow calculations.
+
+\url{https://github.com/JuliaGeometry/GeometricalPredicates.jl}
+
+\section{GeometryTypes.jl Implementations}
+
+\section{Simplex}
 
 We began by implementing a Simplex type in GeometryTypes.jl,
 defined as follows:
@@ -84,8 +138,18 @@ end
 
 With the definition in GeometryTypes, we afford ourselves two notions of
 dimensionality. Our first parameter \texttt{N} gives us the total dimensionality
-of the simplex. `T` is the type of the points. For example in Julia we can
-prefix a colon to an identifier and make it a symbol which is reflected
+of the simplex. We will notice that our convention is offset by positive one
+compared to the mathematical terminology. This is due to Julia not allowing
+arithmetic in type defintions. There are a few approaches to circumvent this
+issue, but they either make the datatype larger or sacrifice strong
+type inference.
+
+The second parameter, \texttt{T} is the type of the points. We will see that
+point may be symbolic in nature, or have their own dimensionality
+expressed independent of \texttt{N}.
+For example in Julia we
+may
+prefix a colon to an identifier and make it a symbolic value which is reflected
 in the type information:
 
 \begin{lstlisting}
@@ -95,7 +159,10 @@ julia> Simplex(:x,:y,:z)
 GeometryTypes.Simplex{3,Symbol}((:x,:y,:z))
 \end{lstlisting}
 
-Symbolic representation will allow us to create parametric geometry.
+In this example we have created a 2-simplex with symbols \texttt{:x, :y, :z}.
+\texttt{N} is 3, and \texttt{T} has become \texttt{Symbol}.
+Symbolic representation will allow us to create simple combinatorial
+analysis.
 Likewise we can construct concrete types:
 
 \begin{lstlisting}
@@ -103,34 +170,22 @@ julia> Simplex(Point(0,0,0), Point(1,1,1))
 GeometryTypes.Simplex{2,FixedSizeArrays.Point{3,Int64}}((FixedSizeArrays.Point{3,Int64}((0,0,0)),FixedSizeArrays.Point{3,Int64}((1,1,1))))
 \end{lstlisting}
 
-This last example illustrates how this type can give us extra generalization.
+This last example illustrates how \texttt{N} and \texttt{T} may give us
+two notions of dimensionality in the Simplex.
 Here we have constructed a line segment in 3D space. The Simplex is of
 size two but the space it occupies is three dimensional. This way it acts
 similar to a fixed size vector, but the type implies all points are on the
-convex hull. (Should update decription to be accurate here).
+convex hull. Unfortunately it may also be possible to construct a Simplex
+using points of dimension less than that of the Simplex, which would
+not hold to our contract of linear independence.
+More so we may also decompose its
 
 Below is an example of a high performance implementation of Simplex decomosition:
 
-\begin{lstlisting}
-"""
-Decompose an N-Simplex into tuple of Simplex{2}
-"""
-@generated function decompose{N, T1, T2}(::Type{Simplex{2, T1}},
-                                       f::Simplex{N, T2})
-    # other wise degenerate
-    2 <= N || error("decompose not implented for N <= 2 yet. N: $N")
+\todo{update code example}
 
-    v = Expr(:tuple)
-    append!(v.args, [:(Simplex{2,$T1}(f[$(i)],
-                                        f[$(i+1)])) for i = 1:N-1])
-    # connect vertices N and 1
-    push!(v.args, :(Simplex{2,$T1}(f[$(N)],
-                                     f[$(1)])))
-    v
-end
-\end{lstlisting}
 
-\section{Issues with Existing Polyhedral Mesh Types}
+\section{HomogenousMesh Type}
 
 Prior to this project, GeometryTypes primarily provides for Polygonal Mesh
 type that is well tuned for operations on the CPU and GPU. It is defined
@@ -158,35 +213,81 @@ end
 \end{lstlisting}
 
 The first thing to note is the provisions for attributes, colors, and textures.
-These are used for mapping textures and/or colors to polygons via APIs such as
-OpenGL. We do not need these (at least yet) in a rigourous mathematical
+These are used for mapping textures and/or colors to polygons via visualization
+software such as
+OpenGL. We do not need these in a rigourous mathematical
 definition. Likewise, in a HomogenousMesh we structure the realization as
-follows: 1. Insert all vertices of the mesh into `vertices` 2. Construct
-Faces of at least 3 indices referencing the points in `vertices`.
+follows: 1. Insert all vertices of the mesh into \texttt{vertices} 2. Construct
+faces of at least 3 indices referencing the points in \texttt{vertices}.
 
 This gives us certain properties that are nice for computation. Primarily
 this allows us to observe the combinatorial properties of the mesh by analyizing
 the faces. In addition, this compacts the data representation of vertices
 since shared vertices can be represented with a common face index. Affine
-transforms only need to operate on the vertices. Thus, in the optimistic versus
-pessimistic case these operations can be 3x faster with this layout
-assuming all vertices are in 3 faces.
+transforms only need to operate on the vertices, and if it is closed and
+faces share many vertices this may be up to 3 times faster.
 
+However the most important issue with this type is that it is not
+parameterized as a Polytope, and simply as a polyhedral mesh.
 
+\section{Polytope Type}
 
-\section{Parametric Triangle}
+We implemented a Polytope to address some of the issues with the
+\texttt{HomogenousMesh} type. It is defined as follows:
 
+\begin{lstlisting}
+"""
+A `Polytope` is an `N` dimensional object with elements `T` of the same type.
+For example typealias `Polygon` and `Polyhedron` exist for dimensions 2 and
+3 respectively.
+"""
+type Polytope{N,T} <: AbstractPolytope{N,T}
+    elements::Vector{T}
+end
+\end{lstlisting}
 
+The supertype \texttt{AbstractPolytope} type is not implied in the mathematical
+sense, but rather to allow more granular definitions as needed for different
+computational challenges. The \texttt{Polytope} type is parameterized
+by \texttt{N}, the order of the polytope. The following
+aliases exist for Polytopes with specified values for \texttt{N}:
 
+\begin{lstlisting}
+"""
+A `Polygon` is a `Polytope` realizable with only two dimensions.
+Generally this will be composed of `Points` or `LineSegment`s.
+"""
+typealias Polygon{T} Polytope{2,T}
 
-\section{Signed Distance Field}
+"""
+A `Polyhedron` is a `Polytope` realizable with only three dimensions.
+Generally this will be composed of `Face`s or two-simplices (`Simplex{3}`).
+"""
+typealias Polyhedron{T} Polytope{3,T}
+\end{lstlisting}
+
+The final parameter, \texttt{T}, is the type of the elements. This may
+simplify many representations, and allow more liberty in Polyhedron
+representation. For example, constructions of polygons are straight forward
+and may be a \texttt{Vector} of \texttt{Symbol} or \texttt{Point}.
+However a Polyhedron may be constructed from \texttt{Simplex} or
+\texttt{Polygon}. In this way it behaves as a wrapper of a \texttt{Vector}
+with special type information associated. Of course, non-sensical constructions
+may be made, but with sufficiently parameterized functions they will not
+be operable.
+
+\subsubsection{Functions}
+
+Along with defining a \texttt{Polytope} we have added calculations for
+area, volume, centroids, and various decomposition functions.
+
+\url{https://github.com/JuliaGeometry/GeometryTypes.jl/pull/27}
+
 
 \subsection{Signed Distance Fields}
 
-\todo{rewrite to be salient}
-
-A signed distance field (SDF) is a uniform sampling of an implicit function,
-or any oriented geometry. \todo{didn't introduce orientation, winding order, etc...}
+A signed distance field (SDF) is a uniform sampling of an implicit function.
+It was implemented earlier as a 
 Below
 we can see this in action over the definition of a circle.
 
@@ -247,6 +348,13 @@ begin to use digital mirror devices (commonly known as DLP or DMD)
 digital manufacturing.
 
 \cite{Pasko_Adzhiev_Comninos_2008}
+
+
+\section{Parametric Polyhedra}
+
+The purpose of Parametric Polyhedra is to allow a polytope to
+be represented with the 
+
 
 
 \section{Polytope}

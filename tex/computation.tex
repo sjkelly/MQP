@@ -21,9 +21,9 @@ rapid prototyping of code and understandable to a reader, yet provides
 a design amicable to performance optimizations and specialization.
 Dynamic type systems allow the programmer to ignore or selectively
 specify type information, such
-as the bytes in an integer, and alow the compiler to infer this information
+as the bytes in an integer, and allow the compiler to infer this information
 based on the input types. JIT compilation means code is compiled during runtime
-which allows functions to be recompiled and thus optimized for varous
+which allows functions to be recompiled and thus optimized for various
 data types.
 The syntactical style is similar to MATLAB and Python.
 The language implementation and many libraries are available under the
@@ -88,18 +88,18 @@ This system positively enables specialization of functionality, but due
 to the coupling of data with functions it becomes a challenge to extend
 functionality. Languages for scientific computing generally avoid the
 ``traditional" notions
-of OOP, preferring rather to seperate data from
+of OOP, preferring rather to separate data from
 functionality. In Table \ref{tab:types} we can see a
 comparison of type systems used in scientific computing languages. Here ``Type
 system" can be either dynamic or static, where in a static system the programmer
 needs to specify to the program compiler how data is transformed in a function.
 Generic functions allow a single function name, for example \texttt{sum}, to have
-multiple defintions with execution contigent upon the matching of argument
+multiple definitions with execution contingent upon the matching of argument
 types. Many programmers may first encounter generic functions through the
 term ``overloaded" function as well.
 The definition of a parametric type is more nuanced, but generally
 means that the definition of a type may vary based on the types of it's
-member data. We will dedicate a section to the explaination of type parameters.
+member data. We will dedicate a section to the explanation of type parameters.
 In the next
 few sections these ideas will hopefully be clarified and the implications of
 multiple dispatch and the relation to OOP will be developed further.
@@ -166,7 +166,7 @@ The problem is that the \texttt{+} function is not implemented between the
 \texttt{ASCIIString} and \texttt{Int64} types.
 We need to either implement a \texttt{+} function
 which might be ambiguous, or specialize the function for \texttt{ASCIIString}.
-A specific implementation is preferrable in this case:
+A specific implementation is preferable in this case:
 \begin{lstlisting}
 julia> function increment(x::ASCIIString)
            ASCIIString([increment(c) for c in x])
@@ -191,9 +191,9 @@ julia> increment("abc")
 What was demonstrated here is the concepts of specialization and multiple
 dispatch, both are highly coupled topics.
 Each function call in Julia is specialized for types if possible.
-This means the author only has to write a few sufficently abstract
+This means the author only has to write a few sufficiently abstract
 implementations of functions. If special cases occur, multiple functions
-with different arity or type signatures can be implmented. Explicitly
+with different arity or type signatures can be implemented. Explicitly
 this is called multiple dispatch. In practice by the user this looks like
 abstracted or generic code if done well so many types can be handled
 by one function.
@@ -226,7 +226,7 @@ The only real similarity is the line count. Each one of these functions are gene
 Julia compiler at run time.
 
 Many of the concepts used for performance also serve as methods for
-expressability. In this case, multiple dispatch used by the compiler for
+expressibility. In this case, multiple dispatch used by the compiler for
 specialization of functions reveals itself as a way for the user to
 specialize over many types. In summary, the
 basic steps in generating native computer code from a function are to:
@@ -240,7 +240,7 @@ basic steps in generating native computer code from a function are to:
 
 \subsection{Mutability and Data Packing}
 Types and immutables are containers of data. The primary difference between
-the two is the notion of ``mutability". Types are mutabile, immutables are 
+the two is the notion of ``mutability". Types are mutable, immutables are 
 immutable. What does this mean? Let's break something first via the REPL:
 \begin{lstlisting}
 julia> type FooIsMutable
@@ -273,9 +273,11 @@ julia> f.a = 2
 ERROR: type FooIsImmutable is immutable
 \end{lstlisting}
 
-What just happened demonstrates the contract defined by mutability. Mutable
-objects, which is an instance of a type (i.e. \texttt{f}), can have their fields
-(i.e. \texttt{a}) changed. Immutables cannot. The immutable contract helps develop
+Our error shows that immutable objects may not have their data (fields)
+modified. Conversely our mutable
+object which is an instance of a type (i.e. \texttt{f}), can have its fields
+(i.e. \texttt{a}) changed. An immutable object \emph{cannot ever change}.
+The immutable contract helps develop
 a notion of functional purity. To the user this means immutables are defined
 by their values. This can be of great benefit to avoid errors and establish
 concrete equality between types, such as vectors.
@@ -309,7 +311,8 @@ construction with \texttt{()}. In computations we want our data be close togethe
 for fast access. In modern times we call such data ``cache friendly", or
 ``cache localized", which means the computer may store the data in
 registers closer to the CPU.
-Immutability helps us achieve this. Let's look that the
+Immutability helps us achieve this by ensuring our data is concretely
+defined and not a reference to another piece of memory. Let's look that the
 types inside the 3-tuples and see their \texttt{isbits} status:
 \begin{lstlisting}
 julia> isbits(Array{Int64,1})
@@ -320,7 +323,7 @@ true
 \end{lstlisting}
 Why is this the case? We see that \texttt{Int64} is bits, because it is literally
 64 bits. In Julia a \texttt{bitstype} behaves similar to an immutable, and is identified
-by value. For example the defintion for \texttt{Int64} is \texttt{bitstype 8 Int64}
+by value. For example the definition for \texttt{Int64} is \texttt{bitstype 8 Int64}
 which means an \texttt{Int64} is 8 bytes long.
 \texttt{Array\{Int64,1\}} is a mutable data type that can vary in size.
 This means
@@ -362,7 +365,7 @@ Most of the current popular programming languages
 use variants of ALGOL syntax, which is noted for being more readable
 \cite{Hoare}.
 Julia also uses ALGOL syntax, but is converted to S-Expressions after parsing
-\cite{julia_internals}.
+\footnote{\url{https://www.youtube.com/watch?v=osdeT-tWjzk}}.
 This enables
 many of the mathematically pure relations we seek to achieve.
 In addition S-Expressions are highly conducive to source transforms.
@@ -378,16 +381,16 @@ will allow optimizations to be performed that are not currently
 available in the compiler.
 Surveys of Computer Science literature show that such a concept is new in
 a programming language that uses type inference
-\cite{julia_metaprog}.
+\cite{\url{http://docs.julialang.org/en/release-0.4/manual/metaprogramming/}}.
 However the use of generated functions is generally frowned upon by the
 Julia community since it makes compilation more difficult since type inference
 has to be run multiple times before compilation may happen.
 This often slows down trivial functions by
 several orders of magnitude, and should be only used if a method is called
-many times and performancde is critical.
+many times and performance is critical.
 
 We will omit an introduction of macros and generated functions
-as they are advanced langauge
+as they are advanced language
 features. For our purposes a basic understanding of the terminology will
 be sufficient.
 
