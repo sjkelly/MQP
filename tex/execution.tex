@@ -72,8 +72,9 @@ applications where user experience is important.
 \subsection{Meshes.jl}
 
 Meshes.jl is currently a meta-package\footnote{Meta-package means
-no code is contained in the package besides imports from others. It is
-often used for stability purposes.} that imports elements on GeometryTypes.jl,
+little or no code is contained in the package besides imported code
+from other packages. It is
+often used for version stability or usability purposes.} that imports elements on GeometryTypes.jl,
 FileIO.jl, and Meshing.jl. It is one of the older packages in the
 Julia package ecosystem and was an early center of collaboration before
 the scopes began to expand. Releases before Meshes.jl became a meta-package 
@@ -318,49 +319,185 @@ the boundary since the value is \texttt{0} and everywhere else is positive.
 
 Distance fields are interesting since they provide an intermediate representation
 between functional space and discrete-geometric space. However they are
-a very memory hungry data structure. Pixar has published OpenVDB which helps
-work around these concerns, but such compression can be lossy.\cite{OpenVDB}
-With the advent of shader pipelines for GPUs, distance fields have become
-more popular. Valve has used SDFs with great success for generating smooth
-text.text renders. \cite{Green_2007}
-Many algorithms for generating polyhedra from an SDF
-exist. The most common are Marching Tetrahedra, Marching Cubes,
-and Dual Contours.\cite{Muller_Wehle_1997}\cite{Newman_Yi_2006}\cite{Cook_Hourvitz}
+a very memory hungry data structure. We have created a data type called
+\texttt{SignedDistanceField}.
 
-\todo{Talk about vert and frag shaders.}
-
-Andreas Bærentzen and Henrik Aanæs published methods on the inverse
-problem of converting a mesh to a signed distance fields.\cite{Baerentzen_Aanaes}
-DiFi was introduced in 2004, which demonstrates an algorithm for creating
-SDFs on multiple types of geometry \cite{Sud_Otaduy_Manocha_2004}.
-\todo{Need to re-read this paper}
-
-Many necessary algorithms in path planning for digital manufacturing tools
-fall out of distance fields. For example, offsetting simply becomes
-an addition or subtraction over the SDF. Computing the medial axis becomes
-a scan for inflection points. Many path planners need to simplify polygon
-representations as to not generate move less than the resolution of the machine.
-Assuming the machine uses a Cartesian system, a SDF can correspond perfectly
-to the lowest available resolution of the machine.
-Likewise as Stereolithographic 3D printers
-begin to use digital mirror devices (commonly known as DLP or DMD)
-, discrete representations of geometry will become more important in
-digital manufacturing.
-
-\cite{Pasko_Adzhiev_Comninos_2008}
+\todo{example of the data type, and configuration space}
 
 
 \section{Parametric Polyhedra}
 
 The purpose of Parametric Polyhedra is to allow a polytope to
-be represented with the 
+be represented with angles and edge lengths.
 
 
+\subsection{ParametricTriangle}
+In order for
+us to start we must parameterize a triangle. Our first
+definition is as follows:
 
-\section{Polytope}
+\begin{lstlisting}
+type ParametricTriangle{T}
+    # edge lengths
+    a::Nullable{T}
+    b::Nullable{T}
+    c::Nullable{T}
+    # angles (radians)
+    alpha::Nullable{T}
+    beta::Nullable{T}
+    gamma::Nullable{T}
+end
+\end{lstlisting}
+
+It uses the \texttt{Nullable} type to give values the additional
+property of being known or unknown. A \texttt{Nullable} often checked with the
+\texttt{isnull} function, overloaded as follows:
+
+\begin{lstlisting}
+function Base.isnull(p::ParametricTriangle)
+    isnull(p.a) || isnull(p.b) || isnull(p.c) ||
+    isnull(p.alpha) || isnull(p.beta) || isnull(p.gamma)
+end
+\end{lstlisting}
+
+In order to check the configuration space of the \texttt{ParametricTriangle} as
+valid we needed to check all of the values are defined and
+follow the sine and cosine relations:
+
+\begin{lstlisting}
+
+"""
+Test if a ParametricTriangle has a valid configuration.
+"""
+function Base.isvalid(p::ParametricTriangle)
+    # underdetermined case
+    isnull(p) && return false
+    # otherwise check constraints since all values exist
+    a = get(p.a)
+    b = get(p.b)
+    c = get(p.c)
+    alpha = get(p.alpha)
+    beta = get(p.beta)
+    gamma = get(p.gamma)
+    return a*cos(beta) + b*cos(alpha) - c == 0 &&
+           b*sin(alpha) - a*sin(beta) == 0 &&
+           alpha + beta + gamma - pi == 0
+end
+
+# version with isapprox for floats
+function Base.isvalid{T<:AbstractFloat}(p::ParametricTriangle{T};
+                                        rtol=sqrt(eps(T)),
+                                        atol=zero(T))
+    # underdetermined case
+    isnull(p) && return false
+    # otherwise check constraints since all values exist
+    a = p.a.value
+    b = p.b.value
+    c = p.c.value
+    alpha = p.alpha.value
+    beta = p.beta.value
+    gamma = p.gamma.value
+    return isapprox(a*cos(beta) + b*cos(alpha) - c,0,
+                    rtol=rtol,atol=atol) &&
+           isapprox(b*sin(alpha) - a*sin(beta),0,
+                    rtol=rtol,atol=atol) &&
+           isapprox(alpha + beta + gamma - pi,0,
+                    rtol=rtol,atol=atol)
+end
+\end{lstlisting}
+
+If some of the edge values in a triangle are unspecified, the following
+function may complete the \texttt{ParametricTriangle}.
+
+\begin{lstlisting}
+"""
+Given an underdetermined ParametricTriangle, compute the missing values
+and return a new ParametricTriangle
+"""
+function Base.fill(p::ParametricTriangle)
+    # all angles must be specified
+    if isnull(p.alpha) || isnull(p.alpha) || isnull(p.gamma)
+        error("Cannot fill in values for this triangle. All angles must be specified")
+    end
+    alpha = get(p.alpha)
+    beta = get(p.beta)
+    gamma = get(p.gamma)
+    # no edges given, use circumcircle=1
+    if isnull(p.a) && isnull(p.b) && isnull(p.c)
+        e = edges(alpha,beta,gamma)
+        return ParametricTriangle(e[1],e[2],e[3],p.alpha,p.beta,p.gamma)
+    else
+        # find the circumcircle
+        D = !isnull(p.a) ? get(p.a)/sin(alpha) :
+            !isnull(p.b) ? get(p.b)/sin(beta) :
+            get(p.c)/sin(gamma) # one must be specified because of prior check
+        # we only need to figure one side that is specified
+        # so we can (re)compute the other two
+        if !isnull(p.a)
+            return ParametricTriangle(p.a, _edge(beta,D), _edge(gamma,D),
+                                      p.alpha, p.beta, p.gamma)
+        elseif !isnull(p.b)
+            return ParametricTriangle(_edge(alpha,D), p.b, _edge(gamma,D),
+                                      p.alpha, p.beta, p.gamma)
+        elseif !isnull(p.c)
+            return ParametricTriangle(_edge(alpha,D), _edge(beta,D), p.c,
+                                      p.alpha, p.beta, p.gamma)
+        end
+    end
+    # otherwise we broke it ... TODO remove once we start using this in loops
+    error("filling triangle failed! What did you do???")
+end
+\end{lstlisting}
 
 
-\section{Combinatorial Operations}
+\subsection{ImplicitTriangle}
+
+The purpose of the implict triangle is to use the law of sines to
+validate a given triangle configuration. The law of sines is given
+below:
+
+\begin{equation}
+\frac{a}{sin(A)} = \frac{b}{sin(B)} = \frac{c}{sin(C)} = d
+\end{equation}
+
+The common value, $d$, is the triangle's circumcircle diameter.
+Thus if we are given 3 edge lengths ($a, b, c$) we may compute this
+value directly
+with the following:
+
+\begin{equation}
+d = \frac{2abc}{\sqrt{(a+b+c)(-a+b+c)(a-b+c)(a+b-c)}}
+\end{equation}
+
+Since we know edge lengths will be strictly positive, and sine is
+positive in the range of 0 to $\pi$. The configuration space
+may be mapped with the following function:
+
+\begin{lstlisting}
+function implicit_triangle(a,b,c,alpha,beta,gamma)
+    r = a*b*c/sqrt((a+b+c)*(a-b+c)*(a+b-c)*(b+c-a))
+    min(sin(alpha)/a - 2r,
+        sin(beta)/b - 2r,
+        sin(gamma)/c - 2r)
+end
+\end{lstlisting}
+
+For example, this function may be mapped over the range of angle values
+using a \texttt{SignedDistanceField}.
+
+\begin{lstlisting}
+using GeometryTypes
+
+res = 0.1
+
+s = SignedDistanceField(HyperRectangle(Vec(0,0.),Vec(pi*1,pi*1)), res) do v
+    implicit_triangle(3,3,3,v[1],v[2],pi/3)
+end
+\end{lstlisting}
+
+For our purposes a global minima search may be performed fairly quickly.
+Other iterative techniques may also be used for solving the configuration
+space such as gradient descent and the BFGS algorithim.
 
 
 

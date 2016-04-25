@@ -340,6 +340,15 @@ RAM generally differs by several orders of magnitude.
 \subsection{Parameters}
 
 
+\todo{WIP}
+
+We have already seen a rough notion of type parameters in the
+\texttt{Array\{Int64,1\}}
+type. The curly brackets, \texttt{\{\}}, denote the type's parameters, which
+are separated by commas. 
+
+\subsubsection{Parametric Functions}
+
 
 \section{Macros and Generated Functions}
 Julia is a descendant of the Lisp family of programming languages. Lisp
@@ -381,7 +390,7 @@ will allow optimizations to be performed that are not currently
 available in the compiler.
 Surveys of Computer Science literature show that such a concept is new in
 a programming language that uses type inference
-\cite{\url{http://docs.julialang.org/en/release-0.4/manual/metaprogramming/}}.
+\footnote{\url{http://docs.julialang.org/en/release-0.4/manual/metaprogramming/}}.
 However the use of generated functions is generally frowned upon by the
 Julia community since it makes compilation more difficult since type inference
 has to be run multiple times before compilation may happen.

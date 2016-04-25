@@ -2,6 +2,34 @@
 
 \section{Future Work}
 
+\subsection{Signed Distance Fields}
+
+Pixar has published OpenVDB which helps
+work around these concerns, but such compression can be lossy.\cite{OpenVDB}
+With the advent of shader pipelines for GPUs, distance fields have become
+more popular. Valve has used SDFs with great success for generating smooth
+text renders. \cite{Green_2007}
+Many algorithms for generating polyhedra from an SDF
+exist. The most common are Marching Tetrahedra, Marching Cubes,
+and Dual Contours.\cite{Muller_Wehle_1997}\cite{Newman_Yi_2006}\cite{Cook_Hourvitz}
+
+Andreas Bærentzen and Henrik Aanæs published methods on the inverse
+problem of converting a mesh to a signed distance fields.\cite{Baerentzen_Aanaes}
+DiFi was introduced in 2004, which demonstrates an algorithm for creating
+SDFs on multiple types of geometry \cite{Sud_Otaduy_Manocha_2004}.
+
+Many necessary algorithms in path planning for digital manufacturing tools
+fall out of distance fields. For example, offsetting simply becomes
+an addition or subtraction over the SDF. Computing the medial axis becomes
+a scan for inflection points. Many path planners need to simplify polygon
+representations as to not generate move less than the resolution of the machine.
+Assuming the machine uses a Cartesian system, a SDF can correspond perfectly
+to the lowest available resolution of the machine.
+Likewise as Stereolithographic 3D printers
+begin to use digital mirror devices (commonly known as DLP or DMD)
+, discrete representations of geometry will become more important in
+digital manufacturing.
+
 \subsection{Automatic Differention of Solids}
 
 \begin{lstlisting}

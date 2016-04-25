@@ -90,3 +90,70 @@ focus will be strictly structural and for enhancing the foundations for
 discovering flexible polyhedra.
 We will expand on the significance of this representation in later sections.
 
+\section{Personal Perspective}
+
+This section will outline the personal motivation for this project.
+In 2009 I first became interested with 3D printing. One of the
+key promises of 3D printing is localized and personalized production.
+This very quickly lead me into the world of generative geometry and in
+particular OpenSCAD. OpenSCAD is a solid modeling application which
+generates solids from scripts. Generative geometry from software allows
+ua designer to expose parameters for a user to manipulate, thus allowing
+many designs to be created from one structure and a user to make a solid
+that fits their unique needs or ecology. Many in this space call
+such a process "appropriate design".
+
+One notable difficulty of OpenSCAD is that it includes its own
+programming language.
+In search of deeper understanding I began to work on my own replacements
+for OpenSCAD. In 2013 this began with the TextCAD project, which allowed
+one to use the principles of Object Oriented Programming (OOP) via Python.
+Concurrently, Christopher Olah was working on ImplicitCAD, a pure
+Haskell implementation of a solid modeller. I had realized that TextCAD
+had solved, to some extent, the expressibility issue with OpenSCAD but
+did not solve the complexity issue. Christopher Olah and I were on
+parallel paths with the expressibility issue, but he had approached
+the problem from a mathematical perspective of functionally defined
+solids. In fact, Haskell is a functional language which made this approach
+intrinsic. After spending some time testing TextCAD, I discovered
+the principles of OOP to be insufficient for correct representations
+of solids. One of the key insights made by Christopher was the importance
+of maintaining functional definitions of solids.
+
+I strongly felt that one of the balances a good generative modeller should
+possess is readability. Many functional languages, including Haskell and
+Lisp are difficult for someone to parse. OpenSCAD may read very similar
+to a markup langauge.
+For a year TextCAD
+sat until I heard about Julia. I began to use it as a replacement for
+MATLAB, but quickly realized it has all the requirements to be a
+functional programming language. This lead me to contribute to the
+geometry ecosystem in hopes of developing a solid modeling framework.
+Later in 2014 I was recruited by the Lewis Group
+at Harvard University to develop a path planner for 3D printers, and
+later took a position at their spin-off company Voxel8 to continue my work.
+This afforded me the opportunity to spend most of my time researching and
+writing computational geometry software on polygonal meshes and
+polygons.
+
+After leaving Voxel8 I began to pursue my work on solid modeling again.
+One of the most apparent issue was how to increase performance and
+propagate parameters in the model.
+The requirements laid out for computing the flexibility
+problem were parallel to my challenges. Much of my work in the middle of 2015
+was collaborating with people working in the visualization space, so I
+had a good understanding of polygonal meshes. My hope was that I could
+make a contribution to this problem in the computational realm. Of course
+much of this work is nascent and I hope the structure of the
+data and packages will provide a good base for projects to come.
+It builds on much of what I have learned in the past 5 years of research
+into computational geometry.
+One notable absence from this report is the progress made in the
+functional representation of solids. Especially towards the convergence of
+combinatorial and functional polytopes. This work is embedded in the
+packages we used for this project, and some of the possibilities will
+be discussed in the conclusion.
+
+
+
+
